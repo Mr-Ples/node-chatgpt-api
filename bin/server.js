@@ -49,6 +49,11 @@ await server.register(cors, {
     origin: '*',
 });
 
+server.get('/', async (request, reply) => {
+    const stream = fs.readFileSync('bing-front-end.html');
+    reply.type('text/html').send(stream);
+});
+
 server.get('/ping', () => Date.now().toString());
 
 server.post('/conversation', async (request, reply) => {

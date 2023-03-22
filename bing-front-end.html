@@ -1,0 +1,183 @@
+<html>
+<head>
+    <style>
+        /* Style the text box and the send button */
+        #input {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid black;
+            margin: 10px;
+        }
+        #conversationId {
+            width: 10%;
+            padding: 10px;
+            border: 1px solid black;
+            margin: 10px;
+        }
+        #send {
+            width: 10%;
+            padding: 10px;
+            border: none;
+            background-color: green;
+            color: white;
+            margin: 10px;
+        }
+
+        /* Style the message div */
+        #mesg {
+            width: 60%;
+            padding: 10px;
+            border: 1px solid black;
+            margin: 10px;
+            right: -529px;
+            position: relative;
+        }
+
+        /* Style the response div */
+        #response {
+            width: 60%;
+            padding: 10px;
+            border: 1px solid rgb(130, 240, 103);
+            margin: 10px;
+        }
+
+        #responses {
+            min-height: 85vh;
+            max-height: 85vh;
+            overflow: scroll;
+            border: 1px solid rgb(240, 108, 108);
+        }
+    </style>
+</head>
+<body>
+    <h1>Bing Chat</h1>
+    <!-- Create an input box for conversation id -->
+    <!-- <input type="text" id="conversationId" placeholder="Type your conversation id here (optional)"> -->
+    <!-- Create a text box for input -->
+    <input type="text" id="input" placeholder="Type your message here">
+    <!-- Create a send button that posts the input to "127.0.0.1:3050/conversation" -->
+    <button id="send">Send</button>
+    <div id="responses">
+
+    </div>
+    <!-- Create a div to display the response -->
+    <!-- <div id="response"></div>
+    <div id="mesg"></div> -->
+    <script>
+        // Get the elements by their ids
+        // var conversationId = document.getElementById("conversationId");
+        var input = document.getElementById("input");
+        var send = document.getElementById("send");
+        var response = document.getElementById("response");
+        var responses = document.getElementById("responses");
+
+        // Create a JSON object with the required format
+        var data = {
+            "message": null,
+            "jailbreakConversationId": true,
+            "conversationId": null,
+            "parentMessageId": null,
+        };
+
+        input.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                send.click();
+            }
+        });
+
+        // Add an event listener to the send button
+        send.addEventListener("click", function() {
+            
+            // Get the value of the input
+            var message = input.value;
+
+            // Check if the input is not empty
+            if (message) {
+                console.log(data);
+
+                var msg = document.createElement('div');
+                msg.id = 'mesg';
+                msg.innerHTML = message;
+                responses.appendChild(msg);
+                responses.scrollTop = responses.scrollHeight;
+
+                var rsp = document.createElement('div');
+                rsp.id = 'response';
+                rsp.innerHTML = 'Loading...';
+                rsp.ariaDisabled = true;
+                responses.appendChild(rsp);
+
+                data.message = message;
+                send.innerHTML = "loading...";
+                responses.scrollTop = responses.scrollHeight;
+                // Clear the input
+                input.value = "";
+
+                // Create an XMLHttpRequest object to make an HTTP request
+                var xhr = new XMLHttpRequest();
+
+                // Open a POST request to "http://127.0.0.1:3050/conversation"
+                xhr.open("POST", "http://127.0.0.1:3050/conversation");
+
+                // Set the request header to indicate JSON content type
+                xhr.setRequestHeader("Content-Type", "application/json");
+
+                // Define what to do when the request is successful
+                xhr.onload = function() {
+                    // Parse the response as JSON object
+                    var result = JSON.parse(xhr.responseText);
+                    console.log(result);
+                    var response_text = result.response;
+                    // response_text = response_text.replaceAll(`(:|\.) \d+(\.|\))`, 'ssssssssssssssssssssssssssssssssssssss');
+                    
+                    if (result.details.sourceAttributions) {
+                        for (let i = 1; i < result.details.sourceAttributions.length + 1; i++) {
+                            response_text = response_text.replaceAll(`[^${i}^]`, `<a href="${result.details.sourceAttributions[i-1].seeMoreUrl}">[${i}]</a>`)
+                        } 
+                    }
+                    var response_text_2 = "";
+                    var textLines = response_text.split("\n");
+                    // console.log(response_text);
+                    for (let i = 0; i < textLines.length; i++) {
+                        var textLine = textLines[i];
+                        // textLines[i] = `<p>${textLine}</p>`;
+                        console.log(textLine);
+                        if (textLine.search(/^(\d+(\.|\))|- \w+)/) > -1){
+                            console.log("search");
+                            response_text_2 = response_text_2 + `<p style="margin: 8px; padding-left:4.00em;">${textLine}</p>`;
+                        } else {
+                            console.log("else");
+                            response_text_2 = response_text_2 + `<p>${textLine}</p>\n`;
+                        }
+                        
+                    } 
+                    // textLines = textLines.join("");
+                    rsp.innerHTML = response_text_2;
+                    
+                    // // Display the response in the div element
+                    // response.innerHTML = conversation;
+                    // conversationId.value = result.conversationId;
+                    // Update other fields as needed
+                    if (!data.conversationId) {
+                    data.conversationId = result.conversationId;
+                    }
+                    data.parentMessageId = result.messageId;
+                    // data.conversationSignature = result.conversationSignature;
+                    // data.clientId = result.clientId;
+                    // data.invocationId = result.invocationId;
+                    if (data.jailbreakConversationId === true) {
+                    data.jailbreakConversationId = result.jailbreakConversationId;
+                    }
+                    
+                    send.innerHTML = "send";
+                    responses.scrollTop = responses.scrollHeight;
+                };
+
+                // Send the JSON object as string in the request body
+                xhr.send(JSON.stringify(data));
+            }
+        });
+
+    </script>
+</body>
