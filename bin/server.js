@@ -11,7 +11,7 @@ import ChatGPTBrowserClient from '../src/ChatGPTBrowserClient.js';
 import BingAIClient from '../src/BingAIClient.js';
 
 (async () => {
-    const tunnel = await localtunnel({ port: process.env.API_PORT || 3050 });
+    const tunnel = await localtunnel({ port: process.env.API_PORT || 3050, subdomain: 'ai-chat'});
 
     // the assigned public url for your tunnel
     // i.e. https://abcdefgjhij.localtunnel.me
