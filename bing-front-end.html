@@ -1,27 +1,25 @@
 <html>
 <head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <style>
         /* Style the text box and the send button */
-        #input {
-            width: 80%;
+        /* #input {
+            width: 80vw;
             padding: 10px;
             border: 1px solid black;
             margin: 10px;
-        }
-        #conversationId {
-            width: 10%;
-            padding: 10px;
-            border: 1px solid black;
-            margin: 10px;
-        }
-        #send {
-            width: 10%;
+            position: relative;
+            float: left;
+        } */
+        /* #send {
+            width: 10vw;
             padding: 10px;
             border: none;
             background-color: green;
             color: white;
             margin: 10px;
-        }
+            float: left;
+        } */
 
         /* Style the message div */
         #mesg {
@@ -29,8 +27,7 @@
             padding: 10px;
             border: 1px solid black;
             margin: 10px;
-            right: -529px;
-            position: relative;
+            border-radius: 5px;
         }
 
         /* Style the response div */
@@ -39,26 +36,26 @@
             padding: 10px;
             border: 1px solid rgb(130, 240, 103);
             margin: 10px;
+            border-radius: 5px;
         }
 
         #responses {
             min-height: 85vh;
             max-height: 85vh;
             overflow: scroll;
-            border: 1px solid rgb(240, 108, 108);
+            border: 1px solid rgb(255, 227, 227);
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>Bing Chat</h1>
-    <!-- Create an input box for conversation id -->
-    <!-- <input type="text" id="conversationId" placeholder="Type your conversation id here (optional)"> -->
-    <!-- Create a text box for input -->
-    <input type="text" id="input" placeholder="Type your message here">
-    <!-- Create a send button that posts the input to "127.0.0.1:3050/conversation" -->
-    <button id="send">Send</button>
-    <div id="responses">
+    <h1 class="text-center">Bing Chat</h1>
+    <div class="row m-2 m-2">
+        <input class='col-8 mx-2'type="text" id="input" placeholder="Type your message here">
+        <button class="col-2 mx-2 btn-primary btn" id="send">Send</button>
+    </div>
 
+    <div id="responses">
     </div>
     <!-- Create a div to display the response -->
     <!-- <div id="response"></div>
@@ -96,10 +93,15 @@
             if (message) {
                 console.log(data);
 
+                var msgContainer = document.createElement('div');
+                msgContainer.classList.add('d-flex');
+                msgContainer.classList.add('flex-row-reverse');
                 var msg = document.createElement('div');
                 msg.id = 'mesg';
+                msg.classList.add("mystyle");
                 msg.innerHTML = message;
-                responses.appendChild(msg);
+                msgContainer.appendChild(msg);
+                responses.appendChild(msgContainer);
                 responses.scrollTop = responses.scrollHeight;
 
                 var rsp = document.createElement('div');
@@ -116,9 +118,10 @@
 
                 // Create an XMLHttpRequest object to make an HTTP request
                 var xhr = new XMLHttpRequest();
+                var base_url = window.location.origin;
 
-                // Open a POST request to "http://127.0.0.1:3050/conversation"
-                xhr.open("POST", "http://127.0.0.1:3050/conversation");
+                // Open a POST request to `${window.location.origin}/conversation`
+                xhr.open("POST", `${window.location.origin}/conversation`);
 
                 // Set the request header to indicate JSON content type
                 xhr.setRequestHeader("Content-Type", "application/json");
