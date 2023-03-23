@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fastify from 'fastify';
+import localtunnel from 'localtunnel';
 import cors from '@fastify/cors';
 import { FastifySSEPlugin } from '@waylaidwanderer/fastify-sse-v2';
 import fs from 'fs';
@@ -8,6 +9,19 @@ import { KeyvFile } from 'keyv-file';
 import ChatGPTClient from '../src/ChatGPTClient.js';
 import ChatGPTBrowserClient from '../src/ChatGPTBrowserClient.js';
 import BingAIClient from '../src/BingAIClient.js';
+
+(async () => {
+    const tunnel = await localtunnel({ port: process.env.API_PORT || 3050 });
+
+    // the assigned public url for your tunnel
+    // i.e. https://abcdefgjhij.localtunnel.me
+    tunnel.url;
+    console.log(tunnel.url);
+
+    tunnel.on('close', () => {
+        // tunnels are closed
+    });
+})();
 
 const arg = process.argv.find(_arg => _arg.startsWith('--settings'));
 const path = arg?.split('=')[1] ?? './settings.js';
