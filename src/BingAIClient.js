@@ -60,12 +60,20 @@ export default class BingAIClient {
                 cookie: this.options.cookies || `_U=${this.options.userToken}`,
                 Referer: 'https://www.bing.com/search?q=Bing+AI&showconv=1&FORM=hpcodx',
                 'Referrer-Policy': 'origin-when-cross-origin',
+                // Workaround for request being blocked due to geolocation
+                'x-forwarded-for': '1.1.1.1',
             },
         };
         if (this.options.proxy) {
             fetchOptions.dispatcher = new ProxyAgent(this.options.proxy);
         }
         const response = await fetch(`${this.options.host}/turing/conversation/create`, fetchOptions);
+
+        const { status, headers } = response;
+        if (status === 200 && +headers.get('content-length') < 5) {
+            throw new Error('/turing/conversation/create: Your IP is blocked by BingAI.');
+        }
+
         const body = await response.text();
         try {
             return JSON.parse(body);
@@ -75,13 +83,15 @@ export default class BingAIClient {
     }
 
     async createWebSocketConnection() {
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             let agent;
             if (this.options.proxy) {
                 agent = new HttpsProxyAgent(this.options.proxy);
             }
 
             const ws = new WebSocket('wss://sydney.bing.com/sydney/ChatHub', { agent });
+
+            ws.on('error', err => reject(err));
 
             ws.on('open', () => {
                 if (this.debug) {
